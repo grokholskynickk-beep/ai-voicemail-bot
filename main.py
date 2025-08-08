@@ -1,21 +1,19 @@
-from flask import Flask, request
+from flask import Flask, request, Response
 from twilio.twiml.voice_response import VoiceResponse
 
 app = Flask(__name__)
 
-@app.get("/")
-def home():
-    return "ok", 200
-
-@app.get("/voice")
-def voice_check():
-    return "voice endpoint alive", 200
-
 @app.route("/voice", methods=["POST"])
-def handle_call():
+def voice():
     response = VoiceResponse()
-    response.say("Hey! This is your AI assistant. Leave a message and I’ll send it to the business owner.")
-    return str(response)
+    response.say("Hello! Please leave a message after the beep.")
+    response.record(maxLength="30", action="/complete")
+    return Response(str(response), mimetype="text/xml")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+@app.route("/complete", methods=["POST"])
+def complete():
+    return "Voicemail received", 200
+
+@app.route("/", methods=["GET"])
+def index():
+    return "App is running", 200
